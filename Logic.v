@@ -466,6 +466,7 @@ Definition manual_grade_for_double_neg_inf : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (contrapositive)  *)
+(* https://github.com/serras/sf-exercises/blob/master/chapter08.v *)
 Theorem contrapositive : forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
@@ -590,7 +591,11 @@ Qed.
 Theorem iff_refl : forall P : Prop,
   P <-> P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P.
+  split.
+  - intros. apply H. 
+  - intros. apply H.
+Qed.  
 
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
