@@ -74,7 +74,10 @@ Theorem silly_ex :
      oddb 3 = true ->
      evenb 4 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  simpl. reflexivity.
+Qed.
+
 (** [] *)
 
 (** To use the [apply] tactic, the (conclusion of the) fact
@@ -110,7 +113,9 @@ Proof.
   intros l l' H.
   destruct l.
   - symmetry. rewrite <- rev_involutive. simpl. rewrite <- H. simpl. reflexivity.
-  (* FILL IN HERE *) Admitted.
+  - symmetry. rewrite <- rev_involutive. simpl. rewrite <- H. simpl. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 1 star, optional (apply_rewrite)  *)
@@ -1220,7 +1225,7 @@ Definition existsb' {X:Type} (f:X->bool) (l:list X):bool :=
     Finally, prove a theorem [existsb_existsb'] stating that
     [existsb'] and [existsb] have the same behavior. *)
 Theorem existsb_existsb': 
-  forall (X:Type) (f:X->bool) (l:list X),existsb f l = existsb' f l.
+  forall (X:Type) (f:X->bool) (l:list X), existsb f l = existsb' f l.
 Proof.
   intros X f l.
   generalize dependent f.
@@ -1228,7 +1233,7 @@ Proof.
   - intro f. unfold existsb'. simpl. reflexivity.
   - simpl. unfold existsb'. intros. destruct (f x) eqn:Heqe1.
     + unfold forallb. rewrite Heqe1. simpl. reflexivity.
-    + unfold existsb' in IHl. rewrite IHl. simpl. rewrite Heqe1. simpl. reflexivity.
+    + unfold existsb' in IHl. rewrite IHl. unfold forallb. rewrite Heqe1. simpl. reflexivity.
 Qed.
 
 (* FILL IN HERE *)
