@@ -156,8 +156,15 @@ Qed.
 Example and_exercise :
   forall n m : nat, n + m = 0 -> n = 0 /\ m = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m eq.
+  split.
+  - destruct n. 
+    + reflexivity.
+    + inversion eq. 
+  - destruct n.
+    + apply eq.
+    + inversion eq.
+Qed.
 
 (** So much for proving conjunctive statements.  To go in the other
     direction -- i.e., to _use_ a conjunctive hypothesis to help prove
