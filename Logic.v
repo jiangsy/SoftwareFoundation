@@ -600,8 +600,12 @@ Qed.
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q R.
+  intros [H11 H12] [H21  H22].
+  split.
+  - intro H3. apply H21. apply H11. apply H3.
+  - intro H3. apply H12. apply H22. apply H3.
+Qed.
 
 (** **** Exercise: 3 stars (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
