@@ -795,6 +795,7 @@ Example In_example_2 :
 Proof.
   (* WORKED IN CLASS *)
   simpl.
+  (* intros n H. inversion H. *)
   intros n [H | [H | []]].
   - exists 1. rewrite <- H. reflexivity.
   - exists 2. rewrite <- H. reflexivity.
@@ -836,15 +837,45 @@ Lemma In_map_iff :
     In y (map f l) <->
     exists x, f x = y /\ In x l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A B f l y.
+  split.
+  - induction l.
+    + simpl. intros. inversion H.
+    + simpl. intros [H1 | H2]. 
+      * exists x. split. 
+        { apply H1. }
+        { left. reflexivity. }
+      * apply IHl in H2. inversion H2. exists x0. inversion H.
+        split. 
+        { apply H0. }
+        { right. apply H1. }
+  - induction l.
+    + simpl. intros. inversion H. inversion H0. inversion H2.
+    + simpl. intros. inversion H. inversion H0. inversion H2. 
+      * left. rewrite <- H3 in H1. apply H1. 
+      * right. apply IHl. exists x0. split. 
+        { apply H1. }
+        { apply H3. }
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars (In_app_iff)  *)
 Lemma In_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros A l.
+  induction l.
+  - split. 
+    + simpl. intros. right. apply H.
+    + simpl. intros. inversion H. inversion H0. apply H0.
+  - split.
+    + simpl. intros. inversion H.
+      * left. left. apply H0.
+      * apply or_assoc. right. apply IHl. apply H0.
+    + simpl. intros. apply or_assoc in H. inversion H.
+      * left. apply H0.
+      * right. apply IHl. apply H0.
+Qed.  
 
 (** **** Exercise: 3 stars, recommended (All)  *)
 (** Recall that functions returning propositions can be seen as
