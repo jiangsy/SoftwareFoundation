@@ -629,8 +629,6 @@ Proof.
       * apply H22.
 Qed.
 
-  (* FILL IN HERE *) Admitted.
-(** [] *)
 
 (** Some of Coq's tactics treat [iff] statements specially, avoiding
     the need for some low-level proof-state manipulation.  In
@@ -726,11 +724,19 @@ Proof.
     which [P] does not hold."  (Hint: [destruct H as [x E]] works on
     existential assumptions!)  *)
 
+(* https://github.com/haklabbeograd/software-foundations-coq-workshop/blob/master/Logic.v *)
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X P.
+  intro H.
+  unfold not. 
+  intro H1.
+  inversion H1.
+  apply H0.
+  apply H.
+Qed.
+
 
 (** **** Exercise: 2 stars (dist_exists_or)  *)
 (** Prove that existential quantification distributes over
@@ -739,8 +745,17 @@ Proof.
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X P Q.
+  split.
+  - intro H. inversion H.
+    inversion H0.
+    + left. exists x. apply H1.
+    + right. exists x. apply H1.
+  - intro H. inversion H.
+    + inversion H0. exists x. left. apply H1.
+    + inversion H0. exists x. right. apply H1.
+Qed.
+
 
 (* ################################################################# *)
 (** * Programming with Propositions *)
