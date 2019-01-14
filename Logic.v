@@ -1386,23 +1386,72 @@ Proof. apply even_bool_prop. reflexivity. Qed.
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b1 b2.
+  split.
+  - intros. destruct b1.
+    + destruct b2.
+      * split. 
+        { reflexivity. }
+        { reflexivity. }
+      * inversion H.
+    + inversion H.
+  - intros H. inversion H.
+    rewrite H0. rewrite H1.
+    simpl. reflexivity.
+Qed. 
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros b1 b2.
+  split.
+  - intro H.
+    destruct b1.
+    + left. reflexivity.
+    + destruct b2.
+      * right. reflexivity.
+      * inversion H.
+  - intro H. inversion H.
+    + rewrite H0. simpl. reflexivity.
+    + rewrite H0. simpl. destruct b1. 
+      * simpl. reflexivity.
+      * simpl. reflexivity.
+Qed. 
 
 (** **** Exercise: 1 star (beq_nat_false_iff)  *)
 (** The following theorem is an alternate "negative" formulation of
     [beq_nat_true_iff] that is more convenient in certain
     situations (we'll see examples in later chapters). *)
 
+(* why 1 star *)
 Theorem beq_nat_false_iff : forall x y : nat,
   beq_nat x y = false <-> x <> y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros x y.
+  split.
+  - intro H. unfold not. intro H0. rewrite <- beq_nat_true_iff in H0. rewrite H in H0. inversion H0.
+  - unfold not. intro H. destruct (beq_nat x y) eqn:Heqe1. 
+    + apply beq_nat_true_iff in Heqe1. apply H in Heqe1. inversion Heqe1.
+    + reflexivity. 
+Qed.
+
+(* ref https://firobe.fr:3000/Firobe/Coq/src/master/Logic.v
+Theorem beq_nat_false_iff : forall x y : nat,
+    beq_nat x y = false <-> x <> y.
+Proof. induction x as [|x' IH].
+   - simpl. destruct y as [|y'].
+     + split. intros H. inversion H. intros []. reflexivity.
+     + split. intros []. apply O_S. intros H. reflexivity.
+   - simpl. destruct y as [|y'].
+     + split. intros []. unfold not. intros H. inversion H. intros H. reflexivity.
+     + split.
+       * intros H. unfold not. intros H2. inversion H2. apply IH in H.
+         rewrite H1 in H. destruct H. reflexivity.
+       * intros H. apply IH. unfold not. intros eq. rewrite eq in H. destruct H. reflexivity.
+Qed.
+*)
+
+
 (** [] *)
 
 (** **** Exercise: 3 stars (beq_list)  *)
