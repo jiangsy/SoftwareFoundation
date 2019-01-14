@@ -1462,17 +1462,46 @@ Qed.
     definition is correct, prove the lemma [beq_list_true_iff]. *)
 
 Fixpoint beq_list {A : Type} (beq : A -> A -> bool)
-                  (l1 l2 : list A) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+                  (l1 l2 : list A) : bool :=
+  match l1,l2 with
+  | [], [] => true
+  | x1 :: t1, x2 :: t2 => beq x1 x2 && beq_list beq t1 t2
+  | _, _ => false
+  end.
+
 
 Lemma beq_list_true_iff :
   forall A (beq : A -> A -> bool),
     (forall a1 a2, beq a1 a2 = true <-> a1 = a2) ->
     forall l1 l2, beq_list beq l1 l2 = true <-> l1 = l2.
 Proof.
-(* FILL IN HERE *) Admitted.
-(** [] *)
-
+  intros A beq.
+  intros H.
+  intros l1. induction l1.
+  intros l2. 
+  - split. 
+    + intros H1. destruct l2.
+      * reflexivity.
+      * simpl in H1. inversion H1.
+    + intros H1. destruct l2.
+      * reflexivity.
+      * inversion H1.
+  - split.
+    + destruct l2.
+      * intro H1. inversion H1.
+      * simpl. intro H1. apply andb_true_iff in H1. inversion H1.
+        apply H in H0. apply IHl1 in H2. rewrite H0. rewrite H2.
+        reflexivity.
+    + destruct l2.
+      * intro H1. inversion H1.
+      * simpl. intro H1. inversion H1. 
+        assert (a=a). { reflexivity. }
+        apply H in H0. rewrite H0.
+        assert (l1=l1). { reflexivity. }
+        apply IHl1 in H4. rewrite H3 in H4. rewrite H4.
+        simpl. reflexivity.
+Qed.
+      
 (** **** Exercise: 2 stars, recommended (All_forallb)  *)
 (** Recall the function [forallb], from the exercise
     [forall_exists_challenge] in chapter [Tactics]: *)
@@ -1488,8 +1517,19 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 
 Theorem forallb_true_iff : forall X test (l : list X),
    forallb test l = true <-> All (fun x => test x = true) l.
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. 
+  intros X test l.
+  induction l.
+  - split.
+    + intro H. simpl. reflexivity.
+    + intro h. simpl. reflexivity.
+  - split.
+    +  simpl. intro H. apply andb_true_iff in H. inversion H. split.
+      * apply H0.
+      * apply IHl. apply H1.
+    + simpl. intro H. inversion H. apply IHl in H1. rewrite H0. rewrite H1.
+      reflexivity.
+Qed.
 
 (** Are there any important properties of the function [forallb] which
     are not captured by this specification? *)
@@ -1622,11 +1662,20 @@ Qed.
     contradiction.  But since we can't, it is safe to add [P \/ ~P] as
     an axiom. *)
 
+(*ref: https://github.com/JayMazur/CS-4593-and-6463/blob/master/Logic.v*)
 Theorem excluded_middle_irrefutable: forall (P:Prop),
   ~ ~ (P \/ ~ P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intro P.
+  unfold not.
+  intro H. apply H. 
+  right.
+  intros.
+  apply H.
+  left.
+  apply H0.
+Qed.
+
 
 (** **** Exercise: 3 stars, advanced (not_exists_dist)  *)
 (** It is a theorem of classical logic that the following two
@@ -1640,14 +1689,26 @@ Proof.
     in constructive logic. Your job is to show that it is implied by
     the excluded middle. *)
 
+(* ref: https://github.com/haklabbeograd/software-foundations-coq-workshop/blob/master/Logic.v *)
 Theorem not_exists_dist :
   excluded_middle ->
   forall (X:Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+  intro H.
+  intros X P.
+  unfold not.
+  intro H0.
+  intros x.
+  assert (P x \/ ~ P x). {
+    apply H.
+  }
+  inversion H1.
+  - apply H2.
+  - apply ex_falso_quodlibet. apply H0. exists x. apply H2.
+Qed.
+ 
+  
 (** **** Exercise: 5 stars, optional (classical_axioms)  *)
 (** For those who like a challenge, here is an exercise taken from the
     Coq'Art book by Bertot and Casteran (p. 123).  Each of the
