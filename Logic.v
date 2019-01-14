@@ -1074,7 +1074,7 @@ Example lemma_application_ex :
     In n (map (fun m => m * 0) ns) ->
     n = 0.
 Proof.
-  intros n ns H.
+  intros n ns H.   
   destruct (proj1 _ _ (In_map_iff _ _ _ _ _) H)
            as [m [Hm _]].
   rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
@@ -1206,9 +1206,34 @@ Definition tr_rev {X} (l : list X) : list X :=
     call); a decent compiler will generate very efficient code in this
     case.  Prove that the two definitions are indeed equivalent. *)
 
+(* ref: http://www.cs.umd.edu/~rrand/cufp_2015/basics.v *)
+Lemma tr_rev_aux_correct :
+  forall T (l1 l2 : list T),
+    rev_append l1 l2 = rev l1 ++ l2.
+Proof.
+  intros T l1.
+  induction l1.
+  - simpl. intros l2. reflexivity.
+  - intros l2. simpl. rewrite IHl1. 
+
+  SearchAbout (_ ++ _ ++ _).
+  
+  rewrite <- app_assoc. simpl. reflexivity.
+Qed.
+
 Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof.
+  intros X. 
+  apply functional_extensionality.
+  intro l.
+  unfold tr_rev.
+  rewrite tr_rev_aux_correct.
+  
+  SearchAbout (_ ++ []).
+
+  apply app_nil_r.
+Qed.
+
 
 (* ================================================================= *)
 (** ** Propositions and Booleans *)
