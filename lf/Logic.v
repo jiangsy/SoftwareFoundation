@@ -889,7 +889,7 @@ Qed.
     restate the left-hand side of [All_In].) *)
 
 Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
-  match l with 
+  match l with
   | [] => True
   | x :: t => P x /\ All P t
   end.
@@ -899,23 +899,8 @@ Lemma All_In :
     (forall x, In x l -> P x) <->
     All P l.
 Proof.
-  intros T P l.
-  induction l.
-  - split. 
-    + simpl. intro H. reflexivity.
-    + simpl. intro H. intros H2 contra. inversion contra.
-  - split.
-    + simpl. intro H. split.
-      * apply H.  left. reflexivity.
-      * apply IHl. intros x0 H3. apply H. right. apply H3.
-    + simpl. intro H. inversion H. intros x0 H2. inversion H2.
-      * rewrite <- H3. apply H0.
-      (* why can't apply H1 in IHl.*)
-      * apply IHl.
-        { apply H1. }
-        { apply H3. }
-Qed.
-
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 3 stars (combine_odd_even)  *)
 (** Complete the definition of the [combine_odd_even] function below.

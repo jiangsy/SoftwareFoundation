@@ -1244,9 +1244,10 @@ Qed.
     a (constructive!) way to generate strings matching [re] that are
     as long as we like. *)
 
+
 Lemma pumping : forall T (re : @reg_exp T) s,
   s =~ re ->
-  pumping_constant re <= length s ->
+  pumping_constant re <= Poly.length s ->
   exists s1 s2 s3,
     s = s1 ++ s2 ++ s3 /\
     s2 <> [] /\
@@ -1630,7 +1631,7 @@ Inductive repeats {X:Type} : list X -> Prop :=
 Theorem pigeonhole_principle: forall (X:Type) (l1  l2:list X),
    excluded_middle ->
    (forall x, In x l1 -> In x l2) ->
-   length l2 < length l1 ->
+   Poly.length l2 < Poly.length l1 ->
    repeats l1.
 Proof.
    intros X l1. induction l1 as [|x l1' IHl1'].

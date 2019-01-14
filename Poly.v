@@ -436,6 +436,7 @@ Proof.
 Theorem rev_injective : forall X : Type, forall l l' : list X,
   rev l = rev l' -> l = l'.
 Proof.
+Admitted.
 
 (* ================================================================= *)
 (** ** Polymorphic Pairs *)
