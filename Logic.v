@@ -924,8 +924,12 @@ Qed.
     equivalent to [Podd n] when [n] is odd and equivalent to [Peven n]
     otherwise. *)
 
-Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
+  fun N => 
+  match (oddb N) with 
+  | true => Podd N
+  | false => Peven N
+  end.
 
 (** To test your definition, prove the following facts: *)
 
@@ -935,7 +939,13 @@ Theorem combine_odd_even_intro :
     (oddb n = false -> Peven n) ->
     combine_odd_even Podd Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n.
+  intros H1 H2.
+  destruct (oddb n) eqn:Heqe1.
+  - unfold combine_odd_even. rewrite Heqe1. apply H1. reflexivity.
+  - unfold combine_odd_even. rewrite Heqe1. apply H2. reflexivity.
+Qed.
+
 
 Theorem combine_odd_even_elim_odd :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -943,7 +953,12 @@ Theorem combine_odd_even_elim_odd :
     oddb n = true ->
     Podd n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n.
+  unfold combine_odd_even.
+  intros H1 H2.
+  rewrite H2 in H1.
+  apply H1.
+Qed.
 
 Theorem combine_odd_even_elim_even :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -951,8 +966,13 @@ Theorem combine_odd_even_elim_even :
     oddb n = false ->
     Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros Podd Peven n.
+  unfold combine_odd_even.
+  intros H1 H2.
+  rewrite H2 in H1.
+  apply H1.
+Qed.
+
 
 (* ################################################################# *)
 (** * Applying Theorems to Arguments *)
