@@ -1247,7 +1247,7 @@ Qed.
 
 Lemma pumping : forall T (re : @reg_exp T) s,
   s =~ re ->
-  pumping_constant re <= Poly.length s ->
+  pumping_constant re <= length s ->
   exists s1 s2 s3,
     s = s1 ++ s2 ++ s3 /\
     s2 <> [] /\
