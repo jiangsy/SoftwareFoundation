@@ -1261,9 +1261,15 @@ Theorem evenb_double_conv : forall n,
   exists k, n = if evenb n then double k
                 else S (double k).
 Proof.
-  (* Hint: Use the [evenb_S] lemma from [Induction.v]. *)
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  induction n.
+  - exists 0. simpl. reflexivity.
+  - destruct (evenb n) eqn:Heqe1.
+    + rewrite evenb_S. rewrite Heqe1. simpl. inversion IHn. exists x. rewrite H. reflexivity.
+    + rewrite evenb_S. rewrite Heqe1. simpl. inversion IHn. exists (S x). (* can't be written as exists (x+1). *)
+      rewrite H. simpl. reflexivity.
+Qed.
+
 
 Theorem even_bool_prop : forall n,
   evenb n = true <-> exists k, n = double k.
