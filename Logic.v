@@ -1207,7 +1207,7 @@ Definition tr_rev {X} (l : list X) : list X :=
     case.  Prove that the two definitions are indeed equivalent. *)
 
 (* ref: http://www.cs.umd.edu/~rrand/cufp_2015/basics.v *)
-Lemma tr_rev_aux_correct :
+Lemma rev_append_correct :
   forall T (l1 l2 : list T),
     rev_append l1 l2 = rev l1 ++ l2.
 Proof.
@@ -1215,9 +1215,7 @@ Proof.
   induction l1.
   - simpl. intros l2. reflexivity.
   - intros l2. simpl. rewrite IHl1. 
-
-  SearchAbout (_ ++ _ ++ _).
-  
+  (* SearchAbout (_ ++ _ ++ _). *)
   rewrite <- app_assoc. simpl. reflexivity.
 Qed.
 
@@ -1227,10 +1225,7 @@ Proof.
   apply functional_extensionality.
   intro l.
   unfold tr_rev.
-  rewrite tr_rev_aux_correct.
-  
-  SearchAbout (_ ++ []).
-
+  rewrite rev_append_correct.
   apply app_nil_r.
 Qed.
 
