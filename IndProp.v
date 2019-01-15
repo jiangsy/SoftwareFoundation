@@ -450,7 +450,7 @@ Proof.
       * apply IHE2.
   - intro E. induction E.
     + apply ev'_0.
-    + assert (forall n, S (S n) = n+2 ).
+    + assert (forall n, S (S n) = n + 2 ).
       {
         induction n0.
         - simpl. reflexivity.
@@ -470,8 +470,13 @@ Qed.
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m Enm En.
+  generalize dependent Enm.
+  induction En.
+  - simpl. intros. apply Enm.
+  - simpl. intro. apply IHEn. apply evSS_ev. apply Enm.
+Qed.
+
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
 (** This exercise just requires applying existing lemmas.  No
@@ -481,8 +486,29 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m p.
+  intros.
+  assert (ev (n + m + (n + p))).
+  { apply ev_sum.
+    - apply H.
+    - apply H0.
+  }
+  assert (n + m + (n + p) = double n + (m + p)).
+  {
+    rewrite double_plus.
+    rewrite <- plus_assoc.
+    assert (m + (n + p)=n + (m + p)). 
+    { rewrite plus_swap. reflexivity. }
+    rewrite H2.
+    rewrite plus_assoc.
+    reflexivity.
+  }
+  rewrite H2 in H1.
+  apply ev_ev__ev with (n := double n).
+  - apply H1.
+  - apply ev_double.
+Qed.  
+
 
 (* ################################################################# *)
 (** * Inductive Relations *)
