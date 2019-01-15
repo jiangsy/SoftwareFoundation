@@ -785,13 +785,30 @@ Definition manual_grade_for_R_provability : option (prod nat string) := None.
     Figure out which function; then state and prove this equivalence
     in Coq? *)
 
-Definition fR : nat -> nat -> nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition fR : nat -> nat -> nat :=
+  (fun n m => n + m).
 
+(* ref: https://firobe.fr:3000/Firobe/Coq*)
 Theorem R_equiv_fR : forall m n o, R m n o <-> fR m n = o.
 Proof.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+  intros m n o.
+  split.
+  - intro HR. induction HR. 
+    + unfold fR. simpl. reflexivity.
+    + simpl. rewrite IHHR. reflexivity.
+    + unfold fR. rewrite <- plus_n_Sm. unfold fR in IHHR. rewrite IHHR. reflexivity.
+    + unfold fR in IHHR. rewrite <- plus_n_Sm in IHHR. rewrite plus_Sn_m in IHHR. inversion IHHR.
+      unfold fR. reflexivity.
+    + unfold fR in IHHR. unfold fR. rewrite plus_comm. apply IHHR.
+  - unfold fR. generalize dependent n. generalize dependent o.
+    induction m.
+    (* destruct H !!! *)
+    + simpl. intros o n H. rewrite H. destruct H. induction n.
+      * apply c1.
+      * apply c3. apply IHn.
+    + simpl. intros. rewrite <- H. apply c2. apply IHm. reflexivity.
+Qed.
+
 
 End R.
 
