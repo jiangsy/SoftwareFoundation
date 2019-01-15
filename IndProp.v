@@ -418,8 +418,11 @@ Qed.
 (** **** Exercise: 2 stars (ev_sum)  *)
 Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m E.
+  induction E.
+  - simpl. intros. apply H.
+  - simpl. intros. apply IHE in H. apply ev_SS. apply H. 
+Qed.
 
 (** **** Exercise: 4 stars, advanced, optional (ev'_ev)  *)
 (** In general, there may be multiple ways of defining a
@@ -437,8 +440,28 @@ Inductive ev' : nat -> Prop :=
 
 Theorem ev'_ev : forall n, ev' n <-> ev n.
 Proof.
- (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n.
+  split.
+  - intros E. induction E.
+    + apply ev_0.
+    + apply ev_SS. apply ev_0.
+    + apply ev_sum.
+      * apply IHE1.
+      * apply IHE2.
+  - intro E. induction E.
+    + apply ev'_0.
+    + assert (forall n, S (S n) = n+2 ).
+      {
+        induction n0.
+        - simpl. reflexivity.
+        - simpl. rewrite IHn0. reflexivity.
+      }  
+      rewrite H.
+      apply ev'_sum.
+      * apply IHE.
+      * apply ev'_2.
+Qed. 
+
 
 (** **** Exercise: 3 stars, advanced, recommended (ev_ev__ev)  *)
 (** Finding the appropriate thing to do induction on is a
