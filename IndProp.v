@@ -134,10 +134,6 @@ Proof.
   - simpl. apply ev_0.
   - simpl. apply ev_SS. apply IHn.
 Qed. 
-
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
 (* ################################################################# *)
 (** * Using Evidence in Proofs *)
 
@@ -279,8 +275,12 @@ Proof.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n E.
+  inversion E.
+  apply evSS_ev in H0.
+  apply H0.
+Qed.
+
 
 (** **** Exercise: 1 star (even5_nonsense)  *)
 (** Prove the following result using [inversion]. *)
@@ -288,8 +288,12 @@ Proof.
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  inversion H.
+  inversion H1.
+  inversion H3.
+Qed.
+
 
 (** The way we've used [inversion] here may seem a bit
     mysterious at first.  Until now, we've only used [inversion] on
