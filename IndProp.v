@@ -1063,7 +1063,8 @@ Lemma MStar1 :
     s =~ Star re.
 Proof.
   intros T s re H.
-  rewrite <- (app_nil_r _ s).
+  (* _ is the placeholder for tyoe T*)
+  rewrite <- (app_nil_r _ s)  .
   apply (MStarApp s [] re).
   - apply H.
   - apply MStar0.
@@ -1080,13 +1081,22 @@ Qed.
 Lemma empty_is_empty : forall T (s : list T),
   ~ (s =~ EmptySet).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s.
+  unfold not.
+  intros H.
+  inversion H.
+Qed.
 
 Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s re1 re2.
+  intros H.
+  inversion H.
+  - apply MUnionL. apply H0.
+  - apply MUnionR. apply H0.
+Qed.
 
 (** The next lemma is stated in terms of the [fold] function from the
     [Poly] chapter: If [ss : list (list T)] represents a sequence of
@@ -1097,8 +1107,17 @@ Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros T ss re.
+  induction ss.
+  - simpl. intros. apply MStar0.
+  - intros. simpl. apply MStarApp.
+    + assert (In x (x::ss)).
+      { simpl. left. reflexivity. }
+      apply H in H0.
+      apply H0.
+    + apply IHss. intros. apply H.
+      simpl. right. apply H0.
+Qed.
 
 (** **** Exercise: 4 stars, optional (reg_exp_of_list_spec)  *)
 (** Prove that [reg_exp_of_list] satisfies the following
