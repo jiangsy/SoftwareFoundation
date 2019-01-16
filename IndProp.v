@@ -1222,6 +1222,7 @@ Qed.
     regular expression matches some string. Prove that your function
     is correct. *)
 
+(* ref: https://firobe.fr:3000/Firobe/Coq *)
 (* empty_set not empty_string *)
 Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool :=
   match re with
@@ -1394,14 +1395,35 @@ Qed.
     [MStar'] exercise above), shows that our definition of [exp_match]
     for [Star] is equivalent to the informal one given previously. *)
 
+(* ref: https://firobe.fr:3000/Firobe/Coq/src/master/IndProp.v *)
 Lemma MStar'' : forall T (s : list T) (re : reg_exp),
   s =~ Star re ->
   exists ss : list (list T),
     s = fold app ss []
     /\ forall s', In s' ss -> s' =~ re.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros T s re H.
+  remember (Star re) as re'.
+  induction H.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+    exists []. split.
+    + unfold fold. reflexivity.
+    + simpl. intros s contra. inversion contra.
+  - inversion Heqre'. apply IHexp_match2 in Heqre'. 
+    inversion Heqre'.
+    exists (s1::x). split.
+    + inversion H1. rewrite H3. unfold fold. reflexivity.
+    + simpl. intros. 
+      (* don't apply H1 too early *)
+      inversion H3.
+      * rewrite <- H2. rewrite <- H4. apply H.
+      * apply H1. apply H4.
+Qed.
 
 (** **** Exercise: 5 stars, advanced (pumping)  *)
 (** One of the first really interesting theorems in the theory of
