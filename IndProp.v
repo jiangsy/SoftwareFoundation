@@ -1113,8 +1113,7 @@ Proof.
   - intros. simpl. apply MStarApp.
     + assert (In x (x::ss)).
       { simpl. left. reflexivity. }
-      apply H in H0.
-      apply H0.
+      apply H in H0. apply H0.
     + apply IHss. intros. apply H.
       simpl. right. apply H0.
 Qed.
