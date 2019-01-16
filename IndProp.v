@@ -1111,7 +1111,7 @@ Proof.
   induction ss.
   - simpl. intros. apply MStar0.
   - intros. simpl. apply MStarApp.
-    + assert (In x (x::ss)).
+    + assert (In x (x :: ss)).
       { simpl. left. reflexivity. }
       apply H in H0. apply H0.
     + apply IHss. intros. apply H.
@@ -1222,14 +1222,48 @@ Qed.
     regular expression matches some string. Prove that your function
     is correct. *)
 
-Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+(* empty_set not empty_string *)
+Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool :=
+  match re with
+  | EmptySet => false
+  | EmptyStr => true 
+  | Char x => true
+  | App re1 re2 => re_not_empty re1 && re_not_empty re2
+  | Union re1 re2 => re_not_empty re1 || re_not_empty re2
+  | Star re => true
+  end.
 
 Lemma re_not_empty_correct : forall T (re : @reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros T re.
+  split.
+  - intros H. induction H. induction H.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+    + simpl. rewrite IHexp_match1. rewrite IHexp_match2. simpl. reflexivity.
+    + simpl. rewrite IHexp_match. simpl. reflexivity.
+    + simpl. rewrite IHexp_match. simpl. destruct (re_not_empty re1).
+      * simpl. reflexivity.
+      * simpl. reflexivity.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+  - intros H. induction re.
+    + inversion H.
+    + exists []. apply MEmpty.
+    + exists [t]. apply MChar.
+    + inversion H. 
+      apply andb_true_iff in H1. inversion H1.
+      apply IHre1 in H0. inversion H0. 
+      apply IHre2 in H2. inversion H2.
+      exists (x ++ x0). apply MApp. * apply H3. * apply H4.
+    + inversion H.
+      apply orb_true_iff in H1. inversion H1.
+      * apply IHre1 in H0. inversion H0. exists x. apply MUnionL. apply H2.
+      * apply IHre2 in H0. inversion H0. exists x. apply MUnionR. apply H2.
+    + exists []. apply MStar0.
+Qed.
+
 
 (* ================================================================= *)
 (** ** The [remember] Tactic *)
