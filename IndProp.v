@@ -1479,7 +1479,6 @@ Qed.
     a (constructive!) way to generate strings matching [re] that are
     as long as we like. *)
 
-
 Lemma pumping : forall T (re : @reg_exp T) s,
   s =~ re ->
   pumping_constant re <= Poly.length s ->
@@ -1498,6 +1497,25 @@ Lemma pumping : forall T (re : @reg_exp T) s,
 
 Import Coq.omega.Omega.
 
+(* an important but simple lemma *)
+(* ref: https://firobe.fr:3000/Firobe/Coq/src/master/IndProp.v *)
+Lemma inequ_plus : forall (a b n m : nat),
+  a + b <= n + m ->
+  a <= n \/ b <= m.
+Proof. 
+  intros a b n m.
+  omega.
+Qed.
+
+Lemma inequ_plus2 : forall (a b n : nat),
+  a + b <= n ->
+  a <= n.
+Proof. 
+  intros a b n.
+  omega.
+Qed.
+
+
 Proof.
   intros T re s Hmatch.
   induction Hmatch
@@ -1506,7 +1524,57 @@ Proof.
        | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
   - (* MEmpty *)
     simpl. omega.
-  (* FILL IN HERE *) Admitted.
+  -  (* MChar *)
+    simpl. omega.
+  -  (* MApp *)
+    rewrite app_length. simpl. intro. apply inequ_plus in H. inversion H.
+    + apply IH1 in H0. inversion H0. inversion H1. inversion H2. inversion H3.
+    exists x. exists x0. exists (x1 ++ s2). split.
+      * rewrite H4. rewrite <- app_assoc.  rewrite <- app_assoc. reflexivity.
+      * split. inversion H5.
+        { apply H6. }
+        { intros m. replace (x ++ napp m x0 ++ x1 ++ s2) with ((x ++ napp m x0 ++ x1) ++ s2). 
+          { apply MApp. inversion H5. apply H7. apply Hmatch2. }
+          { rewrite <- app_assoc. rewrite <- app_assoc. reflexivity. } }
+    + apply IH2 in H0. inversion H0. inversion H1. inversion H2. inversion H3.
+    exists (s1++x). exists x0. exists x1. split.
+      * rewrite H4. rewrite <- app_assoc. reflexivity.
+      * split. inversion H5.
+        { apply H6. }
+        { intros m. replace ((s1 ++ x) ++ napp m x0 ++ x1) with (s1 ++ (x ++ napp m x0 ++ x1)). 
+          { apply MApp. apply Hmatch1. inversion H5. apply H7. }
+          { rewrite <- app_assoc. reflexivity. } }
+  - (* MUnionL *)
+    simpl. intros. apply inequ_plus2 in H. 
+    intros. apply IH in H. inversion H. inversion H0. inversion H1.  inversion H2.
+    exists x. exists x0. exists x1. split.
+    { inversion H3. reflexivity. }
+    { destruct H4 as [H41 H42]. split. apply H41. intro m. apply MUnionL. apply H42. }
+  - (* MUnionR *)
+    simpl. intros. rewrite plus_comm in H. apply inequ_plus2 in H. 
+    intros. apply IH in H. inversion H. inversion H0. inversion H1.  inversion H2.
+    exists x. exists x0. exists x1. split.
+    { inversion H3. reflexivity. }
+    { destruct H4 as [H41 H42]. split. apply H41. intro m. apply MUnionR. apply H42. }
+  - (* MStar0 *)
+    simpl. omega.
+  - (* MStarApp *)
+    simpl. simpl in IH2. rewrite app_length. intros. 
+    assert (1 <= Poly.length s1 \/ 1 <= Poly.length s2). { omega. } 
+    inversion H0.
+    + exists []. exists s1. exists s2. split. simpl. reflexivity. split. 
+      * unfold not. intros. apply f_equal with (f:=Poly.length) in H2. simpl in H2. rewrite H2 in H1. inversion H1.
+      * intro m. simpl. induction m. 
+        { simpl. apply Hmatch2. }  
+        { simpl. rewrite <- app_assoc. apply MStarApp. apply Hmatch1. apply IHm. }
+    + apply IH2 in H1. inversion H1 as [x [x0 [x1 [H2 [H3 H4]]]]].
+      exists (s1 ++ x). exists x0. exists x1. split.
+      * rewrite <- app_assoc. rewrite H2. reflexivity.
+      * split. apply H3. intro m. rewrite <- app_assoc. apply MStarApp.
+        { apply Hmatch1. }
+        { apply H4. }
+Qed.
+
 
 End Pumping.
 (** [] *)
