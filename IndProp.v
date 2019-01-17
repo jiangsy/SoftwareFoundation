@@ -1646,8 +1646,14 @@ Qed.
 (** **** Exercise: 2 stars, recommended (reflect_iff)  *)
 Theorem reflect_iff : forall P b, reflect P b -> (P <-> b = true).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P b H.
+  inversion H.
+  - split. intros. reflexivity.
+    intros. apply H0.
+  - split. intros. unfold not in H0. apply H0 in H2. inversion H2.
+    intro. inversion H2.
+Qed. 
+
 
 (** The advantage of [reflect] over the normal "if and only if"
     connective is that, by destructing a hypothesis or lemma of the
@@ -1697,8 +1703,15 @@ Fixpoint count n l :=
 Theorem beq_natP_practice : forall n l,
   count n l = 0 -> ~(In n l).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n l.
+  induction l.
+  - simpl. intros. unfold not. intros. inversion H0.
+  - simpl. destruct (beq_natP n x).
+    + intros. inversion H0.
+    + intros. unfold not. intros. inversion H1.
+      * unfold not in H. symmetry in H2. apply H in H2. inversion H2.
+      * simpl in H0. apply IHl in H0. unfold not in H0. apply H0 in H2. inversion H2.
+Qed. 
 
 (** In this small example, this technique gives us only a rather small
     gain in convenience for the proofs we've seen; however, using
@@ -1730,8 +1743,12 @@ Proof.
     [nostutter]. *)
 
 Inductive nostutter {X:Type} : list X -> Prop :=
+  | nostutter_0 : nostutter []
+  | nostutter_1 : forall x, nostutter [x]
+   (* (x <> y) ^ nostutter (y :: t) is not good for auto proof *)
+  | nostutter_ss : forall x y t, (x <> y) -> nostutter (y :: t) -> nostutter (x :: y :: t).
  (* FILL IN HERE *)
-.
+
 (** Make sure each of these tests succeeds, but feel free to change
     the suggested proof (in comments) if the given one doesn't work
     for you.  Your definition might be different from ours and still
@@ -1743,34 +1760,44 @@ Inductive nostutter {X:Type} : list X -> Prop :=
     example with more basic tactics.)  *)
 
 Example test_nostutter_1: nostutter [3;1;4;1;5;6].
-(* FILL IN HERE *) Admitted.
-(* 
-  Proof. repeat constructor; apply beq_nat_false_iff; auto.
-  Qed.
-*)
+Proof.
+  repeat constructor; apply beq_nat_false_iff; auto.
+Qed.
+  (* apply nonstutter_ss. split. unfold not. intros. inversion H. 
+  apply nostutter_ss. split. unfold not. intros. inversion H.
+  apply nostutter_ss. split. unfold not. intros. inversion H.
+  apply nostutter_ss. split. unfold not. intros. inversion H.
+  apply nostutter_ss. split. unfold not. intros. inversion H.
+  apply nostutter_1.
+Qed. *)
+
 
 Example test_nostutter_2:  nostutter (@nil nat).
-(* FILL IN HERE *) Admitted.
+Proof.
+  repeat constructor; apply beq_nat_false_iff; auto.
+Qed.
+
 (* 
   Proof. repeat constructor; apply beq_nat_false_iff; auto.
   Qed.
 *)
 
 Example test_nostutter_3:  nostutter [5].
-(* FILL IN HERE *) Admitted.
-(* 
-  Proof. repeat constructor; apply beq_nat_false; auto. Qed.
-*)
+Proof.
+  repeat constructor; apply beq_nat_false_iff; auto.
+Qed.
 
 Example test_nostutter_4:      not (nostutter [3;1;1;4]).
-(* FILL IN HERE *) Admitted.
-(* 
-  Proof. intro.
+Proof. 
+  intro.
   repeat match goal with
-    h: nostutter _ |- _ => inversion h; clear h; subst
+      h: nostutter _ |- _ => inversion h; clear h; subst
   end.
-  contradiction H1; auto. Qed.
-*)
+  contradiction H1; auto.
+Qed.
+  (* 
+ Qed. *)
+
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_nostutter : option (prod nat string) := None.
@@ -1821,6 +1848,10 @@ Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 (* FILL IN HERE *)
 (** [] *)
 
+
+
+
+ (* FILL IN HERE *)
 (** **** Exercise: 4 stars, optional (palindromes)  *)
 (** A palindrome is a sequence that reads the same backwards as
     forwards.
@@ -1843,7 +1874,28 @@ Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
        forall l, pal l -> l = rev l.
 *)
 
-(* FILL IN HERE *)
+Inductive palindrome {X:Type} : list X -> Prop :=
+  | palindrome_0 : palindrome []
+  | palindrome_1 : forall x, palindrome [x]
+  | palindrome_ss : forall x t, palindrome t -> palindrome (x:: t ++ [x]).
+
+Theorem pal_app_rev: forall (X:Type) (l: list X), palindrome (l ++ rev l) .
+Proof.
+  intros X l.
+  induction l.
+  - simpl. apply palindrome_0.
+  - simpl. rewrite app_assoc. apply palindrome_ss. apply IHl.
+Qed.
+
+Theorem pal_rev: forall (X:Type) (l: list X), palindrome l -> l = rev l .
+Proof.
+  intros X l H.
+  induction H.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+  - simpl. rewrite rev_app_distr. rewrite <- app_assoc. simpl. rewrite <- IHpalindrome.
+    reflexivity.
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) := None.
