@@ -1787,7 +1787,7 @@ Proof.
   repeat constructor; apply beq_nat_false_iff; auto.
 Qed.
 
-Example test_nostutter_4:      not (nostutter [3;1;1;4]).
+Example test_nostutter_4:  not (nostutter [3;1;1;4]).
 Proof. 
   intro.
   repeat match goal with
@@ -1834,6 +1834,12 @@ Definition manual_grade_for_nostutter : option (prod nat string) := None.
     not a [Fixpoint].)  *)
 
 (* FILL IN HERE *)
+Inductive in_order_merge {X:Type} : list X -> list X -> list X -> Prop :=
+ | in_order_merge_LEmpty: forall y, in_order_merge y [] y
+ | in_order_merge_REmpty: forall x, in_order_merge x x []
+ | in_order_merge_L: forall l x y h, in_order_merge l x y -> in_order_merge (h::l) (h::x) y
+ | in_order_merge_R: forall l x y h, in_order_merge l x y -> in_order_merge (h::l) x (h::y).
+
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
@@ -1909,6 +1915,24 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
      forall l, l = rev l -> pal l.
 *)
 
+
+Lemma exists_tail : forall (X : Type) (l : list X),
+  l <> [] -> (exists r t, l = r ++ [t]).
+Proof. 
+  intros X. induction l as [|lh lt IH].
+  - intros []. reflexivity.
+  - intros H. destruct lt as [|lth ltt].
+    + exists []. exists lh. reflexivity.
+    + destruct IH as [r0 [t0 eq]].
+      * intros C. inversion C.
+      * exists (lh::r0). exists t0. rewrite eq. reflexivity.
+Qed.
+
+Theorem palindrome_converse: forall (X:Type) (l: list X),  l = rev l -> palindrome l.
+Proof.
+  intros X l.
+Admitted.
+
 (* FILL IN HERE *)
 (** [] *)
 
@@ -1961,14 +1985,29 @@ Lemma in_split : forall (X:Type) (x:X) (l:list X),
   In x l ->
   exists l1 l2, l = l1 ++ x :: l2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x l.
+  induction l.
+  - intros. inversion H.
+  - simpl. intros. inversion H.
+    + exists []. exists l. rewrite H0. simpl. reflexivity.
+    + apply IHl in H0. destruct H0 as [l1 [l2 H1]].
+      exists (x0 :: l1). exists l2. rewrite H1. simpl. reflexivity.
+Qed. 
 
 (** Now define a property [repeats] such that [repeats X l] asserts
     that [l] contains at least one repeated element (of type [X]).  *)
 
 Inductive repeats {X:Type} : list X -> Prop :=
-  (* FILL IN HERE *)
-.
+  | repeats_new : forall h l , In h l -> repeats (h::l)
+  | repeats_old : forall h l , repeats l -> repeats (h::l).
+
+Example test_repeats_1 : repeats [1;2;3;1;4].
+Proof.
+  apply repeats_new.
+  simpl.
+  right. right. left.
+  reflexivity. 
+Qed.
 
 (** Now, here's a way to formalize the pigeonhole principle.  Suppose
     list [l2] represents a list of pigeonhole labels, and list [l1]
@@ -1983,6 +2022,18 @@ Inductive repeats {X:Type} : list X -> Prop :=
     manage to do this, you will not need the [excluded_middle]
     hypothesis. *)
 
+Lemma in_app_comm : forall (X:Type) (x:X) (l1 l2:list X),
+    In x (l1++l2) -> In x (l2++l1).
+Proof.
+  intros.
+  rewrite In_app_iff.
+  rewrite In_app_iff in H.
+  inversion H.
+  - right. apply H0.
+  - left. apply H0.
+Qed.
+
+(* ref: http://proofcafe.org/wiki/Schedule/ProofCafe_27?revision=7dd60fbd604750f5386cb6dd06c9a8987967b5c8 *)
 Theorem pigeonhole_principle: forall (X:Type) (l1  l2:list X),
    excluded_middle ->
    (forall x, In x l1 -> In x l2) ->
@@ -1990,7 +2041,33 @@ Theorem pigeonhole_principle: forall (X:Type) (l1  l2:list X),
    repeats l1.
 Proof.
    intros X l1. induction l1 as [|x l1' IHl1'].
-  (* FILL IN HERE *) Admitted.
+   - intros l2 H1 H2 H3. inversion H3.
+   - intros l2 H1 H2 H3. destruct (H1 (In x l1')). 
+     + apply repeats_new. apply H.
+     + apply repeats_old. destruct (in_split X x l2).
+       * apply H2. simpl. left. reflexivity.
+       * destruct H0. apply (IHl1' (x0++x1)).
+         { apply H1. }
+         { intros. 
+           assert (In x2 l2). { apply H2. simpl. right.  apply H4. }
+           rewrite H0 in H2. apply in_app_comm with (x:=x2) in H2.
+           destruct(H1 (x=x2)).
+           { rewrite H6 in H. unfold not in H. apply H in H4. inversion H4. }
+           { rewrite H0 in H5. simpl. rewrite In_app_iff in H5. inversion H5.
+             { rewrite In_app_iff. left. apply H7. } 
+             { simpl in H7. inversion H7.
+               { unfold not in H6. apply H6 in H8. inversion H8. }
+               { rewrite In_app_iff. right. apply H8. }
+             }   
+           }
+           { simpl. right. apply H4.  }
+         } 
+         { rewrite H0 in H3. rewrite app_length. rewrite app_length in H3. simpl in H3. 
+           unfold lt. unfold lt in H3. 
+           rewrite plus_n_Sm. apply Sn_le_Sm__n_le_m in H3. 
+           apply H3. 
+         }
+Qed. 
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_check_repeats : option (prod nat string) := None.
