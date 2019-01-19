@@ -743,14 +743,15 @@ Example test_filter_even_gt7_2 :
 Definition partition {X : Type}
                      (test : X -> bool)
                      (l : list X)
-                   : list X * list X
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+                   : list X * list X :=
+  (filter test l, filter (fun x => negb (test x)) l).
+
 
 Example test_partition1: partition oddb [1;2;3;4;5] = ([1;3;5], [2;4]).
-(* FILL IN HERE *) Admitted.
+  reflexivity. Qed.
+
 Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
-(* FILL IN HERE *) Admitted.
-(** [] *)
+  reflexivity. Qed.
 
 (* ================================================================= *)
 (** ** Map *)
@@ -970,7 +971,12 @@ Proof. reflexivity. Qed.
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X l.
+  induction l.
+  - unfold fold_length. simpl. reflexivity.
+  - unfold fold_length. simpl. unfold fold_length in IHl. rewrite IHl. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars (fold_map)  *)
