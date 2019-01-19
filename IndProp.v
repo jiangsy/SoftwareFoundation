@@ -2217,8 +2217,24 @@ Lemma app_ne : forall (a : ascii) s re0 re1,
     ([ ] =~ re0 /\ a :: s =~ re1) \/
     exists s0 s1, s = s0 ++ s1 /\ a :: s0 =~ re0 /\ s1 =~ re1.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  split.
+  {
+    intros. apply app_exists in H.
+    destruct H as [s0 [s1 [eq1 [eq2 eq3]]]].
+    destruct s0.
+    - left. split. apply eq2. simpl in eq1. rewrite eq1. apply eq3.
+    - right. inversion eq1. exists s0. exists s1. split. reflexivity. split. apply eq2. apply eq3.
+  }
+  {
+    intros [[H1 H2]|[s0 [s1 [H1 [H2 H3]]]]].
+    - assert (a::s=[]++a::s). {simpl. reflexivity. }  rewrite H. apply MApp.
+      apply H1. apply H2.
+    - rewrite H1. assert(a::s0++s1=([a]++s0)++s1). {simpl. reflexivity. } rewrite H. apply MApp.
+      + simpl. apply H2.
+      + apply H3.
+  }
+Qed.
+
 
 (** [s] matches [Union re0 re1] iff [s] matches [re0] or [s] matches [re1]. *)
 Lemma union_disj : forall (s : string) re0 re1,
