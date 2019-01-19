@@ -2041,31 +2041,32 @@ Theorem pigeonhole_principle: forall (X:Type) (l1  l2:list X),
    repeats l1.
 Proof.
    intros X l1. induction l1 as [|x l1' IHl1'].
-   - intros l2 H1 H2 H3. inversion H3.
-   - intros l2 H1 H2 H3. destruct (H1 (In x l1')). 
+   - intros l2 Excluded_Middle H2 H3. inversion H3.
+   - intros l2 Excluded_Middle H2 H3. destruct (Excluded_Middle (In x l1')). 
      + apply repeats_new. apply H.
      + apply repeats_old. destruct (in_split X x l2).
        * apply H2. simpl. left. reflexivity.
+       (* need to designate a l2 for IHl1' *)
        * destruct H0. apply (IHl1' (x0++x1)).
-         { apply H1. }
+         { apply Excluded_Middle. }
          { intros. 
-           assert (In x2 l2). { apply H2. simpl. right.  apply H4. }
+           assert (In x2 l2). { apply H2. simpl. right. assumption. }
            rewrite H0 in H2. apply in_app_comm with (x:=x2) in H2.
-           destruct(H1 (x=x2)).
-           { rewrite H6 in H. unfold not in H. apply H in H4. inversion H4. }
-           { rewrite H0 in H5. simpl. rewrite In_app_iff in H5. inversion H5.
-             { rewrite In_app_iff. left. apply H7. } 
-             { simpl in H7. inversion H7.
-               { unfold not in H6. apply H6 in H8. inversion H8. }
-               { rewrite In_app_iff. right. apply H8. }
+           destruct (Excluded_Middle (x=x2)).
+           { rewrite H5 in H. apply H in H1. inversion H1. }
+           { rewrite H0 in H4. simpl. rewrite In_app_iff in H4. inversion H4.
+             { rewrite In_app_iff. left. assumption. } 
+             { simpl in H6. inversion H6.
+               { apply H5 in H7. inversion H7. }
+               { rewrite In_app_iff. right. assumption. }
              }   
            }
-           { simpl. right. apply H4.  }
+           { simpl. right. assumption. }
          } 
          { rewrite H0 in H3. rewrite app_length. rewrite app_length in H3. simpl in H3. 
            unfold lt. unfold lt in H3. 
            rewrite plus_n_Sm. apply Sn_le_Sm__n_le_m in H3. 
-           apply H3. 
+           assumption. 
          }
 Qed. 
 
