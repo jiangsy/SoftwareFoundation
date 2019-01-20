@@ -2227,9 +2227,14 @@ Proof.
   }
   {
     intros [[H1 H2]|[s0 [s1 [H1 [H2 H3]]]]].
-    - assert (a::s=[]++a::s). {simpl. reflexivity. }  rewrite H. apply MApp.
+    - assert (a::s = [] ++ a::s). 
+      {simpl. reflexivity. }  
+      rewrite H. apply MApp.
       apply H1. apply H2.
-    - rewrite H1. assert(a::s0++s1=([a]++s0)++s1). {simpl. reflexivity. } rewrite H. apply MApp.
+    - rewrite H1. 
+      assert(a::s0++s1=([a]++s0)++s1). 
+      {simpl. reflexivity. } 
+      rewrite H. apply MApp.
       + simpl. apply H2.
       + apply H3.
   }
@@ -2268,8 +2273,33 @@ Lemma star_ne : forall (a : ascii) s re,
     a :: s =~ Star re <->
     exists s0 s1, s = s0 ++ s1 /\ a :: s0 =~ re /\ s1 =~ Star re.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  split.
+  {
+    intros. remember (a::s) as s'. remember (Star re) as re'. induction H. 
+    - inversion Heqre'.
+    - inversion Heqre'.
+    - inversion Heqre'.
+    - inversion Heqre'.
+    - inversion Heqre'.
+    - inversion Heqs'. 
+    - inversion Heqre'. destruct s1.
+      + simpl in Heqs'. apply IHexp_match2 in Heqs'. 
+        inversion Heqs' as [s0 [s1 Heqs]]. exists s0. exists s1. rewrite <- H2. rewrite <- H2 in Heqs. apply Heqs.
+        apply Heqre'.
+      + inversion Heqs'. exists s1. exists s2. split.
+        * reflexivity.
+        * split. rewrite H3 in H. rewrite H2 in H. apply H.  rewrite H2 in H0. apply H0.  
+   }
+   {
+    intros. inversion H as [s0 [s1 [H0 [H1 H2]]]].
+    rewrite H0. simpl. assert (a::s0++s1=(a::s0)++s1).
+    - simpl. reflexivity.
+    - rewrite H3. apply MStarApp.
+      + apply H1.
+      + apply H2.
+   }
+Qed.
 
 (** The definition of our regex matcher will include two fixpoint
     functions. The first function, given regex [re], will evaluate to a
