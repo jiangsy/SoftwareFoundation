@@ -2605,7 +2605,7 @@ Proof.
       apply reflect_iff in IHs. apply IHs. apply H.
     + simpl. intros. apply (derive_corr x re). specialize (IHs (derive x re)).
       apply reflect_iff in IHs. apply IHs. apply H.
-Qed.    (** [] *)
+Qed.  
 
 
 
