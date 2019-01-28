@@ -1183,7 +1183,6 @@ Proof.
   reflexivity.
 Qed.
 
-
 End PartialMap.
 
 (** **** Exercise: 2 stars (baz_num_elts)  *)
