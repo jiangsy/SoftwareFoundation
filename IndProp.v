@@ -1930,7 +1930,7 @@ Qed.
 
 Theorem palindrome_converse: forall (X:Type) (l: list X),  l = rev l -> palindrome l.
 Proof.
-  intros X l.
+  intros
 Admitted.
 
 (* FILL IN HERE *)
@@ -2422,7 +2422,6 @@ Example d := ascii_of_nat 100.
 (** "c" =~ EmptySet: *)
 Example test_der0 : match_eps (derive c (EmptySet)) = false.
 Proof.
-  unfold derive.
   simpl.
   reflexivity.
 Qed.
@@ -2430,7 +2429,6 @@ Qed.
 (** "c" =~ Char c: *)
 Example test_der1 : match_eps (derive c (Char c)) = true.
 Proof.
-  unfold derive.
   simpl.
   reflexivity.
 Qed.
@@ -2438,7 +2436,6 @@ Qed.
 (** "c" =~ Char d: *)
 Example test_der2 : match_eps (derive c (Char d)) = false.
 Proof.
-  unfold derive.
   simpl.
   reflexivity.
 Qed.
@@ -2447,7 +2444,6 @@ Qed.
 (** "c" =~ App (Char c) EmptyStr: *)
 Example test_der3 : match_eps (derive c (App (Char c) EmptyStr)) = true.
 Proof.
-  unfold derive.
   simpl.
   reflexivity.
 Qed.
@@ -2455,7 +2451,6 @@ Qed.
 (** "c" =~ App EmptyStr (Char c): *)
 Example test_der4 : match_eps (derive c (App EmptyStr (Char c))) = true.
 Proof.
-  unfold derive.
   simpl.
   reflexivity.
 Qed.

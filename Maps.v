@@ -69,7 +69,6 @@ Proof. intros s. unfold beq_string. destruct (string_dec s s) as [|Hs].
   - reflexivity.
   - destruct Hs. reflexivity.
 Qed.
-
 (** The following useful property of [beq_string] follows from an
     analogous lemma about strings: *)
 
@@ -215,8 +214,10 @@ Proof. reflexivity. Qed.
 
 Lemma t_apply_empty:  forall (A:Type) (x: string) (v: A), { --> v } x = v.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  unfold t_empty.
+  reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, optional (t_update_eq)  *)
 (** Next, if we update a map [m] at a key [x] with a new value [v]
@@ -226,8 +227,12 @@ Proof.
 Lemma t_update_eq : forall A (m: total_map A) x v,
   (m & {x --> v}) x = v.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+    intros.
+    unfold t_update.
+    rewrite <- beq_string_refl.
+    reflexivity.
+Qed.
+
 
 (** **** Exercise: 2 stars, optional (t_update_neq)  *)
 (** On the other hand, if we update a map [m] at a key [x1] and then
