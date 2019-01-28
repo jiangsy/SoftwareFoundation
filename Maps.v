@@ -244,8 +244,12 @@ Theorem t_update_neq : forall (X:Type) v x1 x2
   x1 <> x2 ->
   (m & {x1 --> v}) x2 = m x2.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  unfold t_update.
+  rewrite <- beq_string_false_iff in H.
+  rewrite H.
+  reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, optional (t_update_shadow)  *)
 (** If we update a map [m] at a key [x] with a value [v1] and then
@@ -254,11 +258,19 @@ Proof.
     to any key) as the simpler map obtained by performing just
     the second [update] on [m]: *)
 
+(* ref: https://firobe.fr:3000/Firobe/Coq/src/master/Maps.v *)
 Lemma t_update_shadow : forall A (m: total_map A) v1 v2 x,
     m & {x --> v1 ; x --> v2} = m & {x --> v2}.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  unfold t_update. 
+  (* important *) apply functional_extensionality.
+  intros x'.
+  destruct (beq_string x x').
+  - reflexivity.
+  - reflexivity.
+Qed.
+
 
 (** For the final two lemmas about total maps, it's convenient to use
     the reflection idioms introduced in chapter [IndProp].  We begin
@@ -271,8 +283,11 @@ Proof.
 
 Lemma beq_stringP : forall x y, reflect (x = y) (beq_string x y).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  apply iff_reflect.
+  rewrite beq_string_true_iff.
+  reflexivity.
+Qed.
 
 (** Now, given [string]s [x1] and [x2], we can use the [destruct (beq_stringP
     x1 x2)] to simultaneously perform case analysis on the result of
@@ -287,9 +302,14 @@ Proof.
 
 Theorem t_update_same : forall X x (m : total_map X),
     m & { x --> m x } = m.
-  Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+Proof.
+  intros.
+  unfold t_update.
+  apply functional_extensionality. intros x'.
+  destruct (beq_string x x') eqn:Heqe1.
+  - apply beq_string_true_iff in Heqe1. rewrite Heqe1. reflexivity.
+  - reflexivity.
+Qed.
 
 (** **** Exercise: 3 stars, recommended (t_update_permute)  *)
 (** Use [beq_stringP] to prove one final property of the [update]
