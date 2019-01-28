@@ -316,14 +316,33 @@ Qed.
     function: If we update a map [m] at two distinct keys, it doesn't
     matter in which order we do the updates. *)
 
+Lemma beq_string_comm: forall x1 x2,
+  beq_string x1 x2 = beq_string x2 x1.
+Proof.
+  intros.
+  destruct (beq_string x1 x2) eqn:Heqe1.
+  - apply beq_string_true_iff in Heqe1. symmetry in Heqe1. apply beq_string_true_iff in Heqe1.
+    rewrite Heqe1. reflexivity.
+  - apply beq_string_false_iff in Heqe1. unfold not in Heqe1. symmetry. apply beq_string_false_iff.
+    unfold not. intros. symmetry in H. apply Heqe1 in H. inversion H.
+Qed.
+
+
 Theorem t_update_permute : forall (X:Type) v1 v2 x1 x2
                              (m : total_map X),
   x2 <> x1 ->
   m & { x2 --> v2 ; x1 --> v1 }
   =  m & { x1 --> v1 ; x2 --> v2 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  unfold t_update.
+  apply functional_extensionality. intros.
+  destruct (beq_string x x1) eqn:Heqe1.
+  - rewrite beq_string_comm in Heqe1. rewrite Heqe1. apply beq_string_true_iff in Heqe1. rewrite Heqe1 in H. 
+    apply beq_string_false_iff in H. rewrite H. reflexivity.
+  - rewrite beq_string_comm in Heqe1. rewrite Heqe1. reflexivity.
+Qed.
+
 
 (* ################################################################# *)
 (** * Partial maps *)
