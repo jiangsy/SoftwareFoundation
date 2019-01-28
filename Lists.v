@@ -819,17 +819,29 @@ Proof.
 Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction l.
+  - simpl. reflexivity.
+  - simpl. rewrite IHl. reflexivity.
+Qed.
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction l1.
+  - simpl. rewrite app_nil_r. reflexivity.
+  - simpl. rewrite IHl1. rewrite app_assoc. reflexivity.
+Qed.
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction l.
+  - simpl. reflexivity.
+  - simpl. rewrite rev_app_distr. rewrite IHl. simpl. reflexivity. 
+Qed.
 
 (** There is a short solution to the next one.  If you find yourself
     getting tangled up, step back and try to look for a simpler
@@ -838,41 +850,56 @@ Proof.
 Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros.
+  rewrite app_assoc.
+  rewrite app_assoc.
+  reflexivity.
+Qed.
 (** An exercise about your implementation of [nonzeros]: *)
 
 Lemma nonzeros_app : forall l1 l2 : natlist,
   nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  induction l1.
+  - simpl. reflexivity.
+  - destruct n.
+    + simpl. apply IHl1.
+    + simpl. rewrite IHl1. reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars (beq_natlist)  *)
 (** Fill in the definition of [beq_natlist], which compares
     lists of numbers for equality.  Prove that [beq_natlist l l]
     yields [true] for every list [l]. *)
 
-Fixpoint beq_natlist (l1 l2 : natlist) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint beq_natlist (l1 l2 : natlist) : bool :=
+  match l1, l2 with
+  | [], []             => true 
+  | (h1::t1), (h2::t2) =>andb (beq_nat h1 h2) (beq_natlist t1 t2)
+  | _, _              => false
+  end.
 
 Example test_beq_natlist1 :
   (beq_natlist nil nil = true).
- (* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 
 Example test_beq_natlist2 :
   beq_natlist [1;2;3] [1;2;3] = true.
-(* FILL IN HERE *) Admitted.
+reflexivity. Qed.
+
 
 Example test_beq_natlist3 :
   beq_natlist [1;2;3] [1;2;4] = false.
- (* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 
 Theorem beq_natlist_refl : forall l:natlist,
   true = beq_natlist l l.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros. induction l.
+  - simpl. reflexivity.
+  - simpl. rewrite <- IHl. rewrite <- beq_nat_refl. simpl. reflexivity.
+Qed.
 
 (* ================================================================= *)
 (** ** List Exercises, Part 2 *)
@@ -884,8 +911,11 @@ Proof.
 Theorem count_member_nonzero : forall (s : bag),
   leb 1 (count 1 (1 :: s)) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  simpl.
+  reflexivity.
+Qed.
+
 
 (** The following lemma about [leb] might help you in the next exercise. *)
 
@@ -902,8 +932,14 @@ Proof.
 Theorem remove_does_not_increase_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  induction s.
+  - simpl. reflexivity.
+  - destruct n. 
+    + simpl. apply ble_n_Sn. 
+    + simpl. apply IHs.
+Qed.
+
 
 (** **** Exercise: 3 stars, optional (bag_count_sum)  *)
 (** Write down an interesting theorem [bag_count_sum] about bags
@@ -922,11 +958,14 @@ Proof.
 
 (* FILL IN HERE *)
 
+(* ref: https://github.com/chekkal/software-foundations/blob/c63ba8ee5ca1d5b6889f74559f7716ffab2141b2/chapter5_Library_List/rev_injective.v *)
 Theorem rev_injective:
  forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
 Proof. 
-Admitted.
-
+  intros.
+  rewrite <- rev_involutive. rewrite <- H. rewrite rev_involutive.
+  reflexivity.
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_rev_injective : option (prod nat string) := None.
@@ -1017,18 +1056,21 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
 (** Using the same idea, fix the [hd] function from earlier so we don't
     have to pass a default element for the [nil] case.  *)
 
-Definition hd_error (l : natlist) : natoption
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition hd_error (l : natlist) : natoption :=
+  match l with
+  | [] => None
+  | h::t => Some h
+  end.
 
 Example test_hd_error1 : hd_error [] = None.
- (* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 
 Example test_hd_error2 : hd_error [1] = Some 1.
- (* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 
 Example test_hd_error3 : hd_error [5;6] = Some 5.
- (* FILL IN HERE *) Admitted.
-(** [] *)
+reflexivity. Qed.
+
 
 (** **** Exercise: 1 star, optional (option_elim_hd)  *)
 (** This exercise relates your new [hd_error] to the old [hd]. *)
@@ -1036,8 +1078,12 @@ Example test_hd_error3 : hd_error [5;6] = Some 5.
 Theorem option_elim_hd : forall (l:natlist) (default:nat),
   hd default l = option_elim default (hd_error l).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  induction l.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
+
 
 End NatList.
 
@@ -1070,8 +1116,11 @@ Definition beq_id (x1 x2 : id) :=
 (** **** Exercise: 1 star (beq_id_refl)  *)
 Theorem beq_id_refl : forall x, true = beq_id x x.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  destruct x.
+  simpl.
+  apply beq_nat_refl.
+Qed.
 
 (** Now we define the type of partial maps: *)
 
@@ -1117,16 +1166,24 @@ Theorem update_eq :
   forall (d : partial_map) (x : id) (v: nat),
     find x (update d x v) = Some v.
 Proof.
- (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  simpl. 
+  rewrite <- beq_id_refl.
+  reflexivity.
+Qed.
 
 (** **** Exercise: 1 star (update_neq)  *)
 Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
     beq_id x y = false -> find x (update d y o) = find x d.
 Proof.
- (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  simpl.
+  rewrite H.
+  reflexivity.
+Qed.
+
+
 End PartialMap.
 
 (** **** Exercise: 2 stars (baz_num_elts)  *)
