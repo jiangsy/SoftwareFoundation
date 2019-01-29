@@ -428,6 +428,7 @@ Proof.
   - (* m = S m' *) simpl. rewrite <- IHm'.
     rewrite <- plus_n_Sm. reflexivity.  Qed.
 
+
 (** **** Exercise: 1 star, optional (plus_explicit_prop)  *)
 (** Rewrite both [plus_assoc'] and [plus_comm'] and their proofs in
     the same style as [mult_0_r''] above -- that is, for each theorem,
@@ -436,7 +437,30 @@ Proof.
     defined proposition.  *)
 
 (* FILL IN HERE *)
-(** [] *)
+Definition P_plus_assoc (n m p:nat) : Prop :=
+ n + (m + p) = (n + m) + p.
+
+Theorem plus_assoc : forall n m p:nat,
+  P_plus_assoc n m p.
+Proof.
+  intros n m p.
+  apply nat_ind.
+  - unfold P_plus_assoc. rewrite <- plus_n_O. rewrite <- plus_n_O. reflexivity.
+  - intros. unfold P_plus_assoc. unfold P_plus_assoc in H.
+    rewrite <- plus_n_Sm. rewrite <- plus_n_Sm. rewrite <- plus_n_Sm. rewrite H. reflexivity.
+Qed. 
+
+Definition P_plus_comm (n m:nat) : Prop :=
+  m + n = n + m.
+
+Theorem plus_comm : forall n m : nat, P_plus_comm n m.
+Proof.
+  intros.
+  apply nat_ind.
+  - unfold P_plus_comm. rewrite <- plus_n_O. simpl. reflexivity.
+  - unfold P_plus_comm. intros. rewrite <- plus_n_Sm. rewrite <- H.
+    rewrite plus_Sn_m. reflexivity.
+Qed.
 
 (* ################################################################# *)
 (** * Induction Principles in [Prop] *)
