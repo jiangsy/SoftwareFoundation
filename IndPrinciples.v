@@ -62,8 +62,11 @@ Proof.
 Theorem plus_one_r' : forall n:nat,
   n + 1 = S n.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  apply nat_ind.
+  - reflexivity.
+  - intros. simpl. rewrite H. reflexivity.
+Qed.
+
 
 (** Coq generates induction principles for every datatype defined with
     [Inductive], including those that aren't recursive.  Although of
@@ -132,9 +135,16 @@ Check natlist_ind.
 Inductive natlist1 : Type :=
   | nnil1 : natlist1
   | nsnoc1 : natlist1 -> nat -> natlist1.
+(* ===> (modulo a little variable renaming)
+   natlist1_ind :
+      forall P : natlist1 -> Prop,
+         P nnil1  ->
+         (forall (l : natlist1), P l -> forall (n : nat), P (nsnoc1 l n)) ->
+         forall n : natlist1, P n *)
 
 (** Now what will the induction principle look like? *)
-(** [] *)
+Check natlist1_ind.
+
 
 (** From these examples, we can extract this general rule:
 
@@ -160,7 +170,9 @@ Inductive byntree : Type :=
  | bempty : byntree
  | bleaf  : yesno -> byntree
  | nbranch : yesno -> byntree -> byntree -> byntree.
-(** [] *)
+
+ Check byntree_ind.
+
 
 (** **** Exercise: 1 star, optional (ex_set)  *)
 (** Here is an induction principle for an inductively defined
@@ -175,9 +187,10 @@ Inductive byntree : Type :=
     Give an [Inductive] definition of [ExSet]: *)
 
 Inductive ExSet : Type :=
-  (* FILL IN HERE *)
-.
-(** [] *)
+  | con1 : bool -> ExSet
+  | con2 : nat -> ExSet -> ExSet.
+
+Check ExSet_ind.
 
 (* ################################################################# *)
 (** * Polymorphism *)
@@ -217,7 +230,12 @@ Inductive tree (X:Type) : Type :=
   | leaf : X -> tree X
   | node : tree X -> tree X -> tree X.
 Check tree_ind.
-(** [] *)
+(* tree_ind :
+         forall P : tree -> Prop,
+             (forall x : X, P (leaf X x)) ->
+             (forall (t0 : tree x), P t0 -> forall (t1 : tree X), P t1 -> P (node X t0 t1) ->
+             forall t : tree X, P t
+ *)
 
 (** **** Exercise: 1 star, optional (mytype)  *)
 (** Find an inductive definition that gives rise to the
@@ -231,7 +249,12 @@ Check tree_ind.
                forall n : nat, P (constr3 X m n)) ->
             forall m : mytype X, P m
 *) 
-(** [] *)
+Inductive mytype (X:Type) : Type :=
+  | constr1 : X -> mytype X
+  | constr2 : nat -> mytype X
+  | constr3 : mytype X -> nat -> mytype X.
+
+Check mytype_ind.
 
 (** **** Exercise: 1 star, optional (foo)  *)
 (** Find an inductive definition that gives rise to the
@@ -245,7 +268,14 @@ Check tree_ind.
                (forall n : nat, P (f1 n)) -> P (quux X Y f1)) ->
              forall f2 : foo X Y, P f2
 *) 
-(** [] *)
+
+(* ref: https://firobe.fr:3000/Firobe/Coq/src/master/IndPrinciples.v *)
+Inductive foo (X Y:Type) : Type :=
+  | bar : X -> foo X Y
+  | baz : Y -> foo X Y
+  | quux : (nat -> foo X Y) -> foo X Y.
+
+Check foo_ind.
 
 (** **** Exercise: 1 star, optional (foo')  *)
 (** Consider the following inductive definition: *)
@@ -260,12 +290,12 @@ Inductive foo' (X:Type) : Type :=
      foo'_ind :
         forall (X : Type) (P : foo' X -> Prop),
               (forall (l : list X) (f : foo' X),
-                    _______________________ ->
-                    _______________________   ) ->
-             ___________________________________________ ->
-             forall f : foo' X, ________________________
+                    P f  ->
+                    P (C1 X l f)) ->
+             P (C2 X) ->
+             forall f : foo' X, P f
 *)
-
+Check foo'_ind.
 (** [] *)
 
 (* ################################################################# *)
