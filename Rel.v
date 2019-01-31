@@ -119,16 +119,22 @@ Proof.
 Qed.
 
 
-(* FILL IN HERE *)
-(** [] *)
 
 (** **** Exercise: 2 stars, optional (empty_relation_partial)  *)
 (** Show that the [empty_relation] that we defined earlier is a
     partial function. *)
 
-(* FILL IN HERE *)
-(** [] *)
+    Check empty_relation.
 
+    Theorem empty_relation_is_a_partial_function:
+      partial_function empty_relation.
+    Proof.
+      unfold not. unfold partial_function. 
+      intros.
+      inversion H.
+      inversion H1.
+    Qed.
+    
 (* ----------------------------------------------------------------- *)
 (** *** Reflexive Relations *)
 
@@ -181,8 +187,9 @@ Proof.
   unfold lt. unfold transitive.
   intros n m o Hnm Hmo.
   induction Hmo as [| m' Hm'o].
-    (* FILL IN HERE *) Admitted.
-(** [] *)
+  - apply le_S. apply Hnm.
+  - apply le_S. apply IHHm'o.
+Qed.
 
 (** **** Exercise: 2 stars, optional (lt_trans'')  *)
 (** Prove the same thing again by induction on [o]. *)
@@ -193,8 +200,12 @@ Proof.
   unfold lt. unfold transitive.
   intros n m o Hnm Hmo.
   induction o as [| o'].
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  - inversion Hmo.
+  - apply le_S in Hnm. 
+    apply le_trans with (a:=(S n)) (b:=(S m)) (c:=(S o')).
+    apply Hnm. apply Hmo.
+Qed. 
+
 
 (** The transitivity of [le], in turn, can be used to prove some facts
     that will be useful later (e.g., for the proof of antisymmetry
@@ -211,8 +222,14 @@ Qed.
 Theorem le_S_n : forall n m,
   (S n <= S m) -> (n <= m).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  inversion H.
+  - apply le_n.
+  - apply le_trans with (S n).
+    + apply le_S. apply le_n.
+    + apply H1.
+Qed.
+
 
 (** **** Exercise: 2 stars, optional (le_Sn_n_inf)  *)
 (** Provide an informal proof of the following theorem:
@@ -230,8 +247,12 @@ Proof.
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  unfold not. induction n.
+  - intros. inversion H.
+  - intros. apply le_S_n in H. apply IHn in H. inversion H.
+Qed.  
+
 
 (** Reflexivity and transitivity are the main concepts we'll need for
     later chapters, but, for a bit of additional practice working with
