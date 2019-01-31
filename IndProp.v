@@ -1930,8 +1930,8 @@ Qed.
 
 Theorem palindrome_converse: forall (X:Type) (l: list X),  l = rev l -> palindrome l.
 Proof.
-  intros
 Admitted.
+
 
 (* FILL IN HERE *)
 (** [] *)

@@ -88,6 +88,7 @@ Proof.
     [0 = 1].  This is nonsense, so our assumption was
     contradictory.) *)
 
+
 Theorem le_not_a_partial_function :
   ~ (partial_function le).
 Proof.
@@ -96,11 +97,27 @@ Proof.
     apply Hc with (x := 0).
     - apply le_n.
     - apply le_S. apply le_n. }
-  inversion Nonsense.   Qed.
+  inversion Nonsense.   
+Qed.
 
 (** **** Exercise: 2 stars, optional (total_relation_not_partial)  *)
 (** Show that the [total_relation] defined in earlier is not a partial
     function. *)
+
+Check total_relation.
+
+Theorem total_relation_not_a_partial_function:
+  ~ (partial_function total_relation) .
+Proof.
+  unfold not. unfold partial_function. intros Hc.
+  assert (0 = 1) as Nonsense. {
+    apply Hc with (x:=0).
+    - apply tr.
+    - apply tr.
+  }
+  inversion Nonsense.
+Qed.
+
 
 (* FILL IN HERE *)
 (** [] *)
