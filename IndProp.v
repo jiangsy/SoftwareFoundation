@@ -602,10 +602,12 @@ Inductive total_relation : nat -> nat -> Prop :=
 
 (** **** Exercise: 2 stars, optional (empty_relation)  *)
 (** Define an inductive binary relation [empty_relation] (on numbers)
-    that never holds. *)
+    that never holds. *)  
 
-(* FILL IN HERE *)
-(** [] *)
+(* ref: https://firobe.fr:3000/Firobe/Coq/src/master/IndProp.v *)
+Inductive empty_relation : nat -> nat -> Prop :=
+  | er : forall n m:nat,  False -> empty_relation n m.
+
 
 (** **** Exercise: 3 stars, optional (le_exercises)  *)
 (** Here are a number of facts about the [<=] and [<] relations that
