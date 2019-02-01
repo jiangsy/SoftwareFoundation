@@ -432,8 +432,14 @@ Lemma rsc_trans :
       clos_refl_trans_1n R y z ->
       clos_refl_trans_1n R x z.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  induction H.
+  - apply H0.
+  - apply rt1n_trans with y.
+    + apply H.
+    + apply IHclos_refl_trans_1n. apply H0.
+Qed. 
+  
 
 (** Then we use these facts to prove that the two definitions of
     reflexive, transitive closure do indeed define the same
@@ -444,6 +450,17 @@ Theorem rtc_rsc_coincide :
          forall (X:Type) (R: relation X) (x y : X),
   clos_refl_trans R x y <-> clos_refl_trans_1n R x y.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros. split.
+  - intros. induction H.
+    + apply rsc_R. apply H.
+    + apply rt1n_refl.
+    + apply rsc_trans with y.
+      * apply IHclos_refl_trans1.
+      * apply IHclos_refl_trans2.
+  - intros. induction H.
+    + apply rt_refl.
+    + apply rt_trans with y.
+      * apply rt_step. apply H.
+      * apply IHclos_refl_trans_1n.
+Qed.
 
