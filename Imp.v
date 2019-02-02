@@ -765,15 +765,43 @@ Qed.
 (** Write a relation [bevalR] in the same style as
     [aevalR], and prove that it is equivalent to [beval].*)
 
+
 Inductive bevalR: bexp -> bool -> Prop :=
-(* FILL IN HERE *)
+  | E_BTrue : bevalR BTrue true
+  | E_BFalse : bevalR BFalse false
+  | E_BEq : forall (a1 a2: aexp), bevalR (BEq a1 a2) (beq_nat (aeval a1) (aeval a2))
+  | E_BLe : forall (a1 a2: aexp), bevalR (BLe a1 a2) (leb (aeval a1) (aeval a2))
+  | E_BNot : forall (e: bexp) (b:bool), 
+          bevalR e b ->
+          bevalR (BNot e) (negb b)
+  | E_BAnd : forall (e1 e2: bexp) (b1 b2: bool), 
+          bevalR e1 b1 ->
+          bevalR e2 b2 ->
+          bevalR (BAnd e1 e2) (andb b1 b2)
 .
+
+(* Lemma beval_iff_bevalR : forall b bv,
+  bevalR b bv <-> beval b = bv.
+Proof. split.
+  - intros H. induction H;simpl; try (subst;reflexivity).
+  - generalize dependent bv. 
+    induction b. simpl. intros bv H. subst; constructor;
+    try (rewrite aeval_iff_aevalR); try (apply IHb); try (apply IHb1); try (apply IHb2);
+    try reflexivity.
+Qed. *)
 
 Lemma beval_iff_bevalR : forall b bv,
   bevalR b bv <-> beval b = bv.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  split.
+  - intros H. induction H; subst; reflexivity.
+  - generalize dependent bv.
+    induction b; 
+    simpl; intros; subst; constructor;
+    try apply IHb; try apply IHb1; try apply IHb2;
+    reflexivity.
+Qed.
+
 
 End AExp.
 
@@ -1340,8 +1368,12 @@ Example ceval_example2:
   (X ::= 0;; Y ::= 1;; Z ::= 2) / { --> 0 } \\
   { X --> 0 ; Y --> 1 ; Z --> 2 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  apply E_Seq with { X --> 0 }.
+  - apply E_Ass. reflexivity.
+  - apply E_Seq with { X --> 0 ; Y --> 1}. 
+    + apply E_Ass. reflexivity.
+    + apply E_Ass. reflexivity.
+Qed.
 
 (** **** Exercise: 3 stars, optional (pup_to_n)  *)
 (** Write an Imp program that sums the numbers from [1] to
