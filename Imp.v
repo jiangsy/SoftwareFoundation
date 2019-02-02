@@ -1381,15 +1381,32 @@ Qed.
    Prove that this program executes as intended for [X] = [2]
    (this is trickier than you might expect). *)
 
-Definition pup_to_n : com
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition pup_to_n : com :=
+  Y ::= 0;;
+  WHILE ! (X = 0) DO
+    Y ::= Y + X;;
+    X ::= X - 1
+  END.
 
 Theorem pup_to_2_ceval :
   pup_to_n / { X --> 2 }
      \\ { X --> 2 ; Y --> 0 ; Y --> 2 ; X --> 1 ; Y --> 3 ; X --> 0 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  apply E_Seq with { X --> 2 ; Y --> 0}.
+  - apply E_Ass. reflexivity.
+  - apply E_WhileTrue with { X --> 2 ; Y --> 0; Y --> 2; X --> 1}.
+    reflexivity.
+    apply E_Seq with { X --> 2 ; Y --> 0; Y --> 2}.
+    apply E_Ass. reflexivity.
+    apply E_Ass. reflexivity.
+    + apply E_WhileTrue with { X --> 2 ; Y --> 0; Y --> 2; X --> 1; Y --> 3; X --> 0}.
+      * reflexivity.
+      * apply E_Seq with { X --> 2 ; Y --> 0; Y --> 2; X --> 1; Y --> 3}.
+        apply E_Ass. reflexivity.
+        apply E_Ass. reflexivity.
+      * apply E_WhileFalse. reflexivity.
+Qed.
+
 
 (* ================================================================= *)
 (** ** Determinism of Evaluation *)
