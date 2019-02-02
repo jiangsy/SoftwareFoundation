@@ -1497,14 +1497,16 @@ Proof.
   intros st st' contra. unfold loop in contra.
   remember (WHILE true DO SKIP END) as loopdef
            eqn:Heqloopdef.
-
-  (** Proceed by induction on the assumed derivation showing that
+    (** Proceed by induction on the assumed derivation showing that
       [loopdef] terminates.  Most of the cases are immediately
       contradictory (and so can be solved in one step with
       [inversion]). *)
+  induction contra; inversion Heqloopdef.
+  - rewrite H1 in H. inversion H. 
+  - apply IHcontra2 in Heqloopdef. inversion Heqloopdef.
+Qed.
 
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+
 
 (** **** Exercise: 3 stars (no_whiles_eqv)  *)
 (** Consider the following function: *)
@@ -1529,21 +1531,62 @@ Fixpoint no_whiles (c : com) : bool :=
     while loops.  Then prove its equivalence with [no_whiles]. *)
 
 Inductive no_whilesR: com -> Prop :=
- (* FILL IN HERE *)
-.
+  | E_NW_Skip : no_whilesR SKIP
+  | E_NW_Ass : forall x a1, no_whilesR (x ::= a1)
+  | E_NW_Seq : forall c1 c2, no_whilesR c1 -> 
+                        no_whilesR c2 -> 
+                        no_whilesR (c1 ;; c2)
+  | E_NW_If : forall b ct cf, no_whilesR ct -> 
+                         no_whilesR cf -> 
+                         no_whilesR (IFB b THEN ct ELSE cf FI).
+  (* | E_NW_While : forall b c, False -> no_whilesR (WHILE b DO c END). *)
+
 
 Theorem no_whiles_eqv:
    forall c, no_whiles c = true <-> no_whilesR c.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  split.
+  { induction c.
+    simpl; intros; constructor.
+    - intros. constructor.
+    - intros. inversion H. apply andb_true_iff in H1. inversion H1.
+      constructor. apply IHc1. assumption. apply IHc2. assumption.
+    - intros. inversion H. apply andb_true_iff in H1. inversion H1.
+      constructor. apply IHc1. assumption. apply IHc2. assumption.
+    - intros. inversion H. 
+  }
+  {
+    induction c.
+    simpl; intros; constructor.
+    - intros. constructor.
+    - intros. inversion H. simpl. apply IHc1 in H2. apply IHc2 in H3.
+      rewrite H2. rewrite H3. reflexivity.
+    - intros. inversion H. simpl. apply IHc1 in H2. apply IHc2 in H4.
+      rewrite H2. rewrite H4. reflexivity.
+    - intros. inversion H.
+  }
+Qed.
 
 (** **** Exercise: 4 stars (no_whiles_terminating)  *)
 (** Imp programs that don't involve while loops always terminate.
     State and prove a theorem [no_whiles_terminating] that says this. *)
 (** Use either [no_whiles] or [no_whilesR], as you prefer. *)
 
-(* FILL IN HERE *)
+Theorem no_whiles_terminating : forall c st,
+  no_whilesR c ->  exists st', c / st \\ st'.
+Proof.
+  intros.
+  generalize dependent st.
+  induction H.
+  - intros. exists st. apply E_Skip.
+  - intros. exists (st & {x --> aeval st a1}). apply E_Ass. reflexivity.
+  - intros. destruct IHno_whilesR1 with st. destruct IHno_whilesR2 with x.
+    exists x0. apply E_Seq with x. assumption. assumption.
+  - intros. destruct IHno_whilesR1 with st. destruct IHno_whilesR2 with st.
+    destruct (beval st b) eqn:Heqeb.  
+    + exists x. apply E_IfTrue. apply Heqeb. assumption.
+    + exists x0.  apply E_IfFalse. apply Heqeb. assumption. 
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := None.
