@@ -2018,12 +2018,11 @@ Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
 Proof.
   intros c st st1 st2 s1 s2 H1 H2.
   generalize dependent st2. generalize dependent s2.
-  induction H1; intros st2 s2 H2;inversion H2;subst;simpl.
+  induction H1; intros st2 s2 H2; inversion H2;subst;simpl.
   - auto.
   - auto.
   - auto.
-  - apply IHceval2.  assert (st'=st'0). { apply IHceval1 in H1. inversion H1. assumption. } 
-    rewrite H. assumption.
+  - apply IHceval2. apply IHceval1 in H1. inversion H1. rewrite H. assumption.
   - apply IHceval2. apply IHceval1 in H5. inversion H5. inversion H0. 
   - apply IHceval in H3. inversion H3. inversion H0.
   - apply IHceval in H6. assumption.
@@ -2042,7 +2041,7 @@ Proof.
   - apply IHceval1 in H5. inversion H5. rewrite <- H1 in H10. apply IHceval2 in H10. assumption.
 Qed.
 
-(** [] *)
+
 End BreakImp.
 
 (** **** Exercise: 4 stars, optional (add_for_loop)  *)
@@ -2058,8 +2057,3 @@ End BreakImp.
     that makes up the body of the loop.  (You don't need to worry
     about making up a concrete Notation for [for] loops, but feel free
     to play with this too if you like.) *)
-
-(* FILL IN HERE *)
-(** [] *)
-
-
