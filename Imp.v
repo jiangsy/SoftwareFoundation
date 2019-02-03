@@ -1653,38 +1653,97 @@ Inductive sinstr : Type :=
     immaterial what we do, since our compiler will never emit such a
     malformed program. *)
 
-Fixpoint s_execute (st : state) (stack : list nat)
+(* Fixpoint s_execute (st : state) (stack : list nat)
                    (prog : list sinstr)
-                 : list nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+                 : list nat :=
+  match prog with 
+  | [] => stack
+  | (SPush n)::prog_t => s_execute st (n::stack) prog_t
+  | (SLoad x)::prog_t => s_execute st ((st x)::stack) prog_t
+  | SPlus::prog_t => match stack with
+                    | h_0::h_1::stack_t => s_execute st ((h_0+h_1)::stack_t) prog_t
+                    | _ => []
+                    end
+  | SMinus::prog_t => match stack with
+                    | h_0::h_1::stack_t => s_execute st ((h_1-h_0)::stack_t) prog_t
+                    | _ => []
+                    end
+  | SMult::prog_t => match stack with
+                    | h_0::h_1::stack_t => s_execute st ((h_0*h_1)::stack_t) prog_t
+                    | _ => []
+                    end
+  
+  end. *)
+
+(* ref: https://firobe.fr:3000/Firobe/Coq/src/master/Imp.v *)
+(* can't proceed in the following proof with previous def *)
+Fixpoint s_execute (st : state) (stack : list nat)
+    (prog : list sinstr) : list nat := 
+  match prog with
+  | [] => stack
+  | instr :: tl =>
+    let nstack := 
+      match instr with
+      | SPush n => n :: stack
+      | SLoad s => (st s) :: stack
+      | SPlus => match stack with
+        | n1 :: n2 :: stl => (n2 + n1) :: stl
+        | _ => []
+        end
+      | SMinus => match stack with
+        | n1 :: n2 :: stl => (n2 - n1) :: stl
+        | _ => []
+        end
+      | SMult => match stack with
+        | n1 :: n2 :: stl => (n2 * n1) :: stl
+        | _ => []
+        end
+    end in s_execute st nstack tl
+  end.
+        
 
 Example s_execute1 :
      s_execute { --> 0 } []
        [SPush 5; SPush 3; SPush 1; SMinus]
    = [2; 5].
-(* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 
 Example s_execute2 :
      s_execute { X --> 3 } [3;4]
        [SPush 4; SLoad X; SMult; SPlus]
    = [15; 4].
-(* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 
-(** Next, write a function that compiles an [aexp] into a stack
-    machine program. The effect of running the program should be the
-    same as pushing the value of the expression on the stack. *)
 
-Fixpoint s_compile (e : aexp) : list sinstr
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  
+  (** **** Exercise: 4 stars, advanced (stack_compiler_correct)  *)
+  (** Now we'll prove the correctness of the compiler implemented in the
+      previous exercise.  Remember that the specification left
+      unspecified what to do when encountering an [SPlus], [SMinus], or
+      [SMult] instruction if the stack contains less than two
+      elements.  (In order to make your correctness proof easier you
+      might find it helpful to go back and change your implementation!)
+  
+      Prove the following theorem.  You will need to start by stating a
+      more general lemma to get a usable induction hypothesis; the main
+      theorem will then be a simple corollary of this lemma. *)
 
-(** After you've defined [s_compile], prove the following to test
-    that it works. *)
+
+
+Fixpoint s_compile (e : aexp) : list sinstr :=
+  match e with 
+  | ANum n => [SPush n]
+  | AId x => [SLoad x]
+  | APlus a1 a2 => (s_compile a1) ++ (s_compile a2) ++ [SPlus]
+  | AMinus a1 a2 => (s_compile a1) ++ (s_compile a2) ++ [SMinus]
+  | AMult a1 a2 => (s_compile a1) ++ (s_compile a2) ++ [SMult]
+  end.
+
 
 Example s_compile1 :
   s_compile (X - (2 * Y))
   = [SLoad X; SPush 2; SLoad Y; SMult; SMinus].
-(* FILL IN HERE *) Admitted.
-(** [] *)
+reflexivity. Qed.
 
 (** **** Exercise: 4 stars, advanced (stack_compiler_correct)  *)
 (** Now we'll prove the correctness of the compiler implemented in the
@@ -1698,11 +1757,29 @@ Example s_compile1 :
     more general lemma to get a usable induction hypothesis; the main
     theorem will then be a simple corollary of this lemma. *)
 
+
+Lemma s_exec_app_distr : forall p1 p2 st stack,
+s_execute st stack (p1 ++ p2) = s_execute st (s_execute st stack p1) p2.
+Proof. 
+  induction p1 as [|p1h p1t IH].
+  - reflexivity.
+  - destruct p1h eqn:eq; intros; try (apply IH).
+Qed.
+
+Lemma s_compile_correct_lem :
+  forall (e : aexp) (st : state) (stack : list nat),
+  s_execute st stack (s_compile e) = (aeval st e) :: stack.
+Proof.
+  induction e; simpl; intros st stack; subst; simpl;
+  try (repeat (rewrite s_exec_app_distr); rewrite IHe2; rewrite IHe1);
+  reflexivity.
+Qed.
+
 Theorem s_compile_correct : forall (st : state) (e : aexp),
   s_execute st [] (s_compile e) = [ aeval st e ].
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros st e. apply s_compile_correct_lem. Qed.
+
 
 (** **** Exercise: 3 stars, optional (short_circuit)  *)
 (** Most modern programming languages use a "short-circuit" evaluation
@@ -1720,8 +1797,24 @@ Proof.
     would _not_ be equivalent to the original, since it would make more
     programs terminate.) *)
 
-(* FILL IN HERE *)
-(** [] *)
+Fixpoint beval' (st : state) (b : bexp) : bool :=
+  match b with
+  | BTrue       => true
+  | BFalse      => false
+  | BEq a1 a2   => beq_nat (aeval st a1) (aeval st a2)
+  | BLe a1 a2   => leb (aeval st a1) (aeval st a2)
+  | BNot b1     => negb (beval st b1)
+  | BAnd b1 b2  => if (beval st b1) then (beval st b2) else false
+  end.
+
+Theorem beval_equalto_beval' : forall st b,
+  beval st b = beval' st b.
+Proof.
+  intros.
+  generalize dependent st.
+  induction b; intros; simpl; reflexivity.
+Qed.  
+
 
 Module BreakImp.
 (** **** Exercise: 4 stars, advanced (break_imp)  *)
@@ -1834,10 +1927,43 @@ Reserved Notation "c1 '/' st '\\' s '/' st'"
 (** Based on the above description, complete the definition of the
     [ceval] relation. *)
 
+
 Inductive ceval : com -> state -> result -> state -> Prop :=
   | E_Skip : forall st,
       CSkip / st \\ SContinue / st
-  (* FILL IN HERE *)
+  | E_Break : forall st,
+      CBreak / st \\ SBreak / st
+  | E_Ass : forall a n x st,
+      aeval st a = n ->
+      (CAss x a) / st \\ SContinue / st & {x --> n}
+  | E_Seq_Continue : forall c1 c2 st st' st'' sig,
+      c1 / st \\ SContinue / st' ->
+      c2 / st' \\ sig / st'' ->
+      (CSeq c1 c2) / st \\ sig / st''
+  | E_Seq_Break : forall c1 c2 st st' ,
+      c1 / st \\ SBreak / st' ->
+      (CSeq c1 c2) / st \\ SBreak / st'
+  | E_If_True : forall b ct cf  st st' sig,
+      beval st b = true ->
+      ct / st \\ sig / st' ->
+      (CIf b ct cf) / st \\ sig / st'
+  | E_If_False : forall b ct cf st st' sig,
+      beval st b = false -> 
+      cf / st \\ sig / st' ->
+      (CIf b ct cf) / st \\ sig / st'
+  | E_While_False : forall b c st,
+      beval st b = false -> 
+      (CWhile b c) / st \\ SContinue / st
+  | E_While_True_Break : forall b c st st',
+      beval st b = true -> 
+      c / st \\ SBreak / st' ->
+      (CWhile b c) / st \\ SContinue / st'
+  | E_While_True_Continue : forall b c st st' st'',
+      beval st b = true ->
+      c / st \\ SContinue / st' -> 
+      beval st'' b = false ->
+      (CWhile b c) / st' \\ SContinue / st'' ->
+      (CWhile b c) / st \\ SContinue / st''
 
   where "c1 '/' st '\\' s '/' st'" := (ceval c1 st s st').
 
@@ -1847,21 +1973,29 @@ Theorem break_ignore : forall c st st' s,
      (BREAK;; c) / st \\ s / st' ->
      st = st'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  inversion H.
+  - inversion H2.
+  - inversion H5. reflexivity.
+Qed.
 
 Theorem while_continue : forall b c st st' s,
   (WHILE b DO c END) / st \\ s / st' ->
   s = SContinue.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  inversion H; reflexivity.
+Qed.
 
 Theorem while_stops_on_break : forall b c st st',
   beval st b = true ->
   c / st \\ SBreak / st' ->
   (WHILE b DO c END) / st \\ SContinue / st'.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  inversion H0; constructor; subst; assumption.
+Qed.
+
 
 (** **** Exercise: 3 stars, advanced, optional (while_break_true)  *)
 Theorem while_break_true : forall b c st st',
@@ -1869,8 +2003,12 @@ Theorem while_break_true : forall b c st st',
   beval st' b = true ->
   exists st'', c / st'' \\ SBreak / st'.
 Proof.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+  intros.
+  inversion H.
+  - rewrite H0 in H4. inversion H4.
+  - exists st. assumption.
+  - rewrite H0 in H5. inversion H5.
+Qed.
 
 (** **** Exercise: 4 stars, advanced, optional (ceval_deterministic)  *)
 Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
@@ -1878,7 +2016,31 @@ Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
      c / st \\ s2 / st2 ->
      st1 = st2 /\ s1 = s2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros c st st1 st2 s1 s2 H1 H2.
+  generalize dependent st2. generalize dependent s2.
+  induction H1; intros st2 s2 H2;inversion H2;subst;simpl.
+  - auto.
+  - auto.
+  - auto.
+  - apply IHceval2.  assert (st'=st'0). { apply IHceval1 in H1. inversion H1. assumption. } 
+    rewrite H. assumption.
+  - apply IHceval2. apply IHceval1 in H5. inversion H5. inversion H0. 
+  - apply IHceval in H3. inversion H3. inversion H0.
+  - apply IHceval in H6. assumption.
+  - apply IHceval. assumption. 
+  - rewrite H8 in H. inversion H.
+  - rewrite H8 in H. inversion H.
+  - apply IHceval. assumption.
+  - auto.
+  - rewrite H3 in H. inversion H.
+  - rewrite H3 in H. inversion H.
+  - rewrite H7 in H. inversion H.
+  - apply IHceval in H8. inversion H8. rewrite H0. auto.
+  - apply IHceval in H5. inversion H5. inversion H3.
+  - rewrite H in H7. inversion H7.
+  - apply IHceval1 in H8. inversion H8. inversion H3.
+  - apply IHceval1 in H5. inversion H5. rewrite <- H1 in H10. apply IHceval2 in H10. assumption.
+Qed.
 
 (** [] *)
 End BreakImp.
